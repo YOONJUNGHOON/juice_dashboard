@@ -93,15 +93,21 @@ export default function AddEntryClient() {
                 type="text"
                 required
                 value={ticker}
-                onChange={(e) => setTicker(e.target.value)}
-                placeholder="예: 005930"
+                onChange={(e) => setTicker(e.target.value.toUpperCase())}
+                placeholder="예: 005930 / AAPL"
                 className="w-full rounded-lg px-3 py-2.5 text-sm outline-none font-mono"
                 style={inputStyle}
                 onFocus={handleFocus}
                 onBlur={handleBlur}
               />
               <p className="mt-1 text-xs" style={{ color: 'var(--text-muted)' }}>
-                네이버 금융 6자리 코드
+                {/^\d{6}$/.test(ticker) ? (
+                  <>한국주식 · <a href={`https://finance.naver.com/item/main.nhn?code=${ticker}`} target="_blank" rel="noreferrer" style={{ color: 'var(--accent)' }}>네이버 금융에서 확인 ↗</a></>
+                ) : ticker ? (
+                  <>해외주식 · <a href={`https://finance.yahoo.com/quote/${ticker}`} target="_blank" rel="noreferrer" style={{ color: 'var(--accent)' }}>Yahoo Finance에서 확인 ↗</a></>
+                ) : (
+                  <>한국: <a href="https://finance.naver.com" target="_blank" rel="noreferrer" style={{ color: 'var(--accent)' }}>네이버 금융</a> · 해외: <a href="https://finance.yahoo.com" target="_blank" rel="noreferrer" style={{ color: 'var(--accent)' }}>Yahoo Finance</a></>
+                )}
               </p>
             </div>
 
@@ -140,8 +146,8 @@ export default function AddEntryClient() {
               id="price"
               type="number"
               required
-              min="0.0001"
-              step={/^\d{6}$/.test(ticker) ? '1' : '0.01'}
+              min="0"
+              step="any"
               value={purchasePrice}
               onChange={(e) => setPurchasePrice(e.target.value)}
               placeholder={/^\d{6}$/.test(ticker) ? '예: 52300' : '예: 185.50'}
