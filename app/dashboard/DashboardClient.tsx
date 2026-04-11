@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { calculateReturnPct, formatReturnPct } from '@/lib/stock'
+import { calculateReturnPct, formatReturnPct, isKoreanTicker } from '@/lib/stock'
 
 interface Entry {
   id: string
@@ -155,7 +155,9 @@ export default function DashboardClient({ entries, isAdmin }: DashboardClientPro
 
                     {/* 매입단가 */}
                     <td className="px-4 py-3 text-right tabular-nums" style={{ color: 'var(--text-primary)' }}>
-                      {Number(entry.purchase_price).toLocaleString('ko-KR')}
+                      {isKoreanTicker(entry.ticker)
+                        ? Number(entry.purchase_price).toLocaleString('ko-KR')
+                        : `$${Number(entry.purchase_price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                     </td>
 
                     {/* 현재가 */}
@@ -163,7 +165,9 @@ export default function DashboardClient({ entries, isAdmin }: DashboardClientPro
                       {pricesLoading ? (
                         <span style={{ color: 'var(--text-muted)' }}>—</span>
                       ) : price != null ? (
-                        price.toLocaleString('ko-KR')
+                        isKoreanTicker(entry.ticker)
+                          ? price.toLocaleString('ko-KR')
+                          : `$${price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                       ) : (
                         <span style={{ color: 'var(--text-muted)' }}>조회 실패</span>
                       )}

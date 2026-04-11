@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { fetchNaverPrice } from '@/lib/stock'
+import { fetchStockPrice } from '@/lib/stock'
 import { getSession } from '@/lib/auth'
 
 // GET /api/stock-price?tickers=005930,000660,035420
@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
 
   const results = await Promise.all(
     tickers.map(async (ticker) => {
-      const price = await fetchNaverPrice(ticker)
+      const price = await fetchStockPrice(ticker)
       return [ticker, price] as [string, number | null]
     })
   )

@@ -17,13 +17,13 @@ export function formatReturnPct(pct: number, decimals = 2): string {
   return `${sign}${pct.toFixed(decimals)}%`
 }
 
-// ── Naver Finance price fetcher ───────────────────────────────────────────────
+/** True if ticker is a 6-digit Korean stock code (e.g. 005930) */
+export function isKoreanTicker(ticker: string): boolean {
+  return /^\d{6}$/.test(ticker)
+}
 
-/**
- * Fetch the current stock price for a Korean ticker from Naver Finance.
- * Must be called server-side only (API route or Server Component).
- * Returns null if the ticker is not found or the fetch fails.
- */
+// ── Naver Finance price fetcher (Korean stocks) ───────────────────────────────
+
 export async function fetchNaverPrice(ticker: string): Promise<number | null> {
   try {
     const url = `https://finance.naver.com/item/main.nhn?code=${encodeURIComponent(ticker)}`
@@ -34,14 +34,12 @@ export async function fetchNaverPrice(ticker: string): Promise<number | null> {
           '(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
         Referer: 'https://finance.naver.com',
       },
-      next: { revalidate: 60 }, // cache for 60 s in Next.js fetch cache
+      next: { revalidate: 60 },
     })
 
     if (!res.ok) return null
 
     const html = await res.text()
-
-    // Naver Finance: <p class="no_today"> ... <span class="blind">123,456</span>
     const match = html.match(/class="no_today"[^>]*>[\s\S]*?<span class="blind">([0-9,]+)<\/span>/)
     if (!match) return null
 
@@ -50,4 +48,35 @@ export async function fetchNaverPrice(ticker: string): Promise<number | null> {
   } catch {
     return null
   }
+}
+
+// ── Yahoo Finance price fetcher (overseas stocks) ─────────────────────────────
+
+export async function fetchYahooPrice(ticker: string): Promise<number | null> {
+  try {
+    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?interval=1d&range=1d`
+    const res = await fetch(url, {
+      headers: {
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 ' +
+          '(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+        Accept: 'application/json',
+      },
+      next: { revalidate: 60 },
+    })
+
+    if (!res.ok) return null
+
+    const json = await res.json()
+    const price = json?.chart?.result?.[0]?.meta?.regularMarketPrice
+    return typeof price === 'number' ? price : null
+  } catch {
+    return null
+  }
+}
+
+// ── Unified fetcher — auto-routes by ticker format ────────────────────────────
+
+export async function fetchStockPrice(ticker: string): Promise<number | null> {
+  return isKoreanTicker(ticker) ? fetchNaverPrice(ticker) : fetchYahooPrice(ticker)
 }

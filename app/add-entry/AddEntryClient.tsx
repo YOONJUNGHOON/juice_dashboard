@@ -134,17 +134,17 @@ export default function AddEntryClient() {
               className="block text-xs font-medium mb-1.5"
               style={{ color: 'var(--text-muted)' }}
             >
-              매입단가 (원) *
+              매입단가{/^\d{6}$/.test(ticker) ? ' (원)' : ticker ? ' (USD)' : ' (원/USD)'} *
             </label>
             <input
               id="price"
               type="number"
               required
-              min="1"
-              step="1"
+              min="0.0001"
+              step={/^\d{6}$/.test(ticker) ? '1' : '0.01'}
               value={purchasePrice}
               onChange={(e) => setPurchasePrice(e.target.value)}
-              placeholder="예: 52300"
+              placeholder={/^\d{6}$/.test(ticker) ? '예: 52300' : '예: 185.50'}
               className="w-full rounded-lg px-3 py-2.5 text-sm outline-none tabular-nums"
               style={inputStyle}
               onFocus={handleFocus}
