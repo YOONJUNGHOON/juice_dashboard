@@ -13,6 +13,7 @@ export default function UploadClient() {
   const router = useRouter()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  const [week, setWeek] = useState('')
   const [title, setTitle] = useState('')
   const [file, setFile] = useState<File | null>(null)
   const [dragging, setDragging] = useState(false)
@@ -39,12 +40,14 @@ export default function UploadClient() {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     if (!file) { setError('파일을 선택해주세요'); return }
+    if (!week) { setError('회차(년/월)를 선택해주세요'); return }
     if (!title.trim()) { setError('제목을 입력해주세요'); return }
 
     setError('')
     setLoading(true)
     try {
       const formData = new FormData()
+      formData.append('week', week)
       formData.append('title', title.trim())
       formData.append('file', file)
 
@@ -83,6 +86,31 @@ export default function UploadClient() {
         style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}
       >
         <form onSubmit={handleSubmit} className="space-y-5">
+          <div>
+            <label
+              htmlFor="week"
+              className="block text-xs font-medium mb-1.5"
+              style={{ color: 'var(--text-muted)' }}
+            >
+              회차 (년/월) *
+            </label>
+            <input
+              id="week"
+              type="month"
+              required
+              value={week}
+              onChange={(e) => setWeek(e.target.value)}
+              className="w-full rounded-lg px-3 py-2.5 text-sm outline-none"
+              style={{
+                background: 'var(--surface)',
+                border: '1px solid var(--border)',
+                color: 'var(--text-primary)',
+              }}
+              onFocus={(e) => (e.currentTarget.style.borderColor = 'var(--accent)')}
+              onBlur={(e) => (e.currentTarget.style.borderColor = 'var(--border)')}
+            />
+          </div>
+
           <div>
             <label
               htmlFor="title"

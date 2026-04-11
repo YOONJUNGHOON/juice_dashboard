@@ -12,9 +12,13 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData()
     const file = formData.get('file') as File | null
     const title = (formData.get('title') as string | null)?.trim()
+    const week = (formData.get('week') as string | null)?.trim() || null
 
     if (!file || !title) {
       return NextResponse.json({ error: '제목과 파일을 모두 입력해주세요' }, { status: 400 })
+    }
+    if (!week) {
+      return NextResponse.json({ error: '회차(년/월)를 선택해주세요' }, { status: 400 })
     }
 
     if (file.size > MAX_SIZE_BYTES) {
@@ -42,6 +46,7 @@ export async function POST(request: NextRequest) {
     }
 
     const { error: dbError } = await supabase.from('uploads').insert({
+      week,
       title,
       uploader: session.name,
       file_path: filePath,

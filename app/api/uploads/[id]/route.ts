@@ -30,9 +30,11 @@ export async function PATCH(
 
   const formData = await request.formData()
   const title = (formData.get('title') as string | null)?.trim()
+  const week = (formData.get('week') as string | null)?.trim() || null
   const file = formData.get('file') as File | null
 
   if (!title) return NextResponse.json({ error: '제목을 입력해주세요' }, { status: 400 })
+  if (!week) return NextResponse.json({ error: '회차(년/월)를 선택해주세요' }, { status: 400 })
 
   let newFilePath = existing.file_path
   let newFileName: string | undefined
@@ -67,6 +69,7 @@ export async function PATCH(
   const { error: dbError } = await supabase
     .from('uploads')
     .update({
+      week,
       title,
       file_path: newFilePath,
       ...(newFileName !== undefined && { file_name: newFileName }),

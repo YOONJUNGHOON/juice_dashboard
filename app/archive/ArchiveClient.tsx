@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 
 interface UploadEntry {
   id: string
+  week: string | null
   title: string
   uploader: string
   file_name: string
@@ -32,6 +33,7 @@ export default function ArchiveClient({
 }) {
   const router = useRouter()
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [editWeek, setEditWeek] = useState('')
   const [editTitle, setEditTitle] = useState('')
   const [editFile, setEditFile] = useState<File | null>(null)
   const [saving, setSaving] = useState(false)
@@ -40,15 +42,18 @@ export default function ArchiveClient({
 
   function startEdit(f: UploadEntry) {
     setEditingId(f.id)
+    setEditWeek(f.week != null ? String(f.week) : '')
     setEditTitle(f.title)
     setEditFile(null)
   }
 
   async function handleSave(id: string) {
     if (!editTitle.trim()) return
+    if (!editWeek) { alert('회차(년/월)를 선택해주세요'); return }
     setSaving(true)
     try {
       const formData = new FormData()
+      formData.append('week', editWeek)
       formData.append('title', editTitle.trim())
       if (editFile) formData.append('file', editFile)
 
@@ -79,7 +84,7 @@ export default function ArchiveClient({
     }
   }
 
-  const HEADERS = ['제목', '업로더', '파일명', '크기', '등록일', '']
+  const HEADERS = ['회차', '제목', '업로더', '파일명', '크기', '등록일', '']
 
   return (
     <div>
@@ -119,6 +124,19 @@ export default function ArchiveClient({
 
                 return (
                   <tr key={file.id} style={i < files.length - 1 ? { borderBottom: '1px solid var(--border)' } : undefined}>
+                    {/* 회차 */}
+                    <td className="px-4 py-3 text-sm font-semibold whitespace-nowrap" style={{ color: 'var(--accent)' }}>
+                      {isEditing ? (
+                        <input
+                          type="month"
+                          value={editWeek}
+                          onChange={(e) => setEditWeek(e.target.value)}
+                          className="rounded px-2 py-1 text-sm outline-none"
+                          style={{ background: 'var(--bg)', border: '1px solid var(--accent)', color: 'var(--text-primary)' }}
+                        />
+                      ) : file.week ?? '—'}
+                    </td>
+
                     {/* 제목 */}
                     <td className="px-4 py-3 font-medium" style={{ color: 'var(--text-primary)' }}>
                       {isEditing ? (

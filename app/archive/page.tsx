@@ -10,7 +10,8 @@ export default async function ArchivePage() {
     getSession(),
     supabase
       .from('uploads')
-      .select('id, title, uploader, file_name, file_size, file_path, created_at')
+      .select('id, week, title, uploader, file_name, file_size, file_path, created_at')
+      .order('week', { ascending: false, nullsFirst: false })
       .order('created_at', { ascending: false }),
   ])
 
