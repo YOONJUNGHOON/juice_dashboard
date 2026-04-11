@@ -8,6 +8,7 @@ export default function AddEntryClient() {
   const [ticker, setTicker] = useState('')
   const [companyName, setCompanyName] = useState('')
   const [purchasePrice, setPurchasePrice] = useState('')
+  const [recommender, setRecommender] = useState('')
   const [notes, setNotes] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -32,6 +33,7 @@ export default function AddEntryClient() {
           company_name: companyName.trim(),
           purchase_price: price,
           notes: notes.trim() || null,
+          recommender: recommender.trim() || null,
         }),
       })
 
@@ -132,6 +134,27 @@ export default function AddEntryClient() {
                 onBlur={handleBlur}
               />
             </div>
+          </div>
+
+          <div>
+            <label
+              htmlFor="recommender"
+              className="block text-xs font-medium mb-1.5"
+              style={{ color: 'var(--text-muted)' }}
+            >
+              추천인
+            </label>
+            <input
+              id="recommender"
+              type="text"
+              value={recommender}
+              onChange={(e) => setRecommender(e.target.value)}
+              placeholder="예: 홍길동"
+              className="w-full rounded-lg px-3 py-2.5 text-sm outline-none"
+              style={inputStyle}
+              onFocus={handleFocus}
+              onBlur={handleBlur}
+            />
           </div>
 
           <div>

@@ -10,7 +10,7 @@ export default async function DashboardPage() {
     getSession(),
     supabase
       .from('dashboard_entries')
-      .select('id, ticker, company_name, purchase_price, notes, created_at')
+      .select('id, ticker, company_name, purchase_price, notes, recommender, created_at')
       .order('created_at', { ascending: false }),
   ])
 

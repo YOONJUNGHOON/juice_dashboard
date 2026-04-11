@@ -9,7 +9,7 @@ export async function GET() {
 
   const { data, error } = await supabase
     .from('dashboard_entries')
-    .select('id, ticker, company_name, purchase_price, notes, created_at')
+    .select('id, ticker, company_name, purchase_price, notes, recommender, created_at')
     .order('created_at', { ascending: false })
 
   if (error) return NextResponse.json({ error: 'Failed to fetch entries' }, { status: 500 })
@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
   const session = await getSession()
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { ticker, company_name, purchase_price, notes } = await request.json()
+  const { ticker, company_name, purchase_price, notes, recommender } = await request.json()
 
   if (!ticker || !company_name || purchase_price == null) {
     return NextResponse.json({ error: '종목코드, 종목명, 매입단가는 필수입니다' }, { status: 400 })
@@ -37,6 +37,7 @@ export async function POST(request: NextRequest) {
     company_name: company_name.trim(),
     purchase_price: Number(purchase_price),
     notes: notes?.trim() || null,
+    recommender: recommender?.trim() || null,
   })
 
   if (error) return NextResponse.json({ error: 'Failed to add entry' }, { status: 500 })
