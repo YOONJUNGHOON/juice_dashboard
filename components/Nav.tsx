@@ -13,6 +13,7 @@ const NAV_LINKS = [
   { href: '/archive', label: '아카이브' },
   { href: '/upload', label: '업로드' },
   { href: '/add-entry', label: '종목 추가' },
+  { href: '/refs', label: '참고사이트' },
 ]
 
 export default function Nav({ isAdmin, userName }: NavProps) {
