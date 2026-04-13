@@ -34,7 +34,7 @@ export async function fetchNaverPrice(ticker: string): Promise<number | null> {
           '(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
         Referer: 'https://finance.naver.com',
       },
-      next: { revalidate: 60 },
+      next: { revalidate: 600 },
     })
 
     if (!res.ok) return null
@@ -62,7 +62,7 @@ export async function fetchYahooPrice(ticker: string): Promise<number | null> {
           '(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
         Accept: 'application/json',
       },
-      next: { revalidate: 60 },
+      next: { revalidate: 600 },
     })
 
     if (!res.ok) return null

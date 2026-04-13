@@ -94,6 +94,9 @@ export default function DashboardClient({ entries, isAdmin }: DashboardClientPro
     }
   }
 
+  // True only on the very first load before any prices have arrived
+  const initialLoading = pricesLoading && Object.keys(prices).length === 0
+
   const HEADERS = ['순위', '종목명', '종목코드', '추천인', '매입단가', '현재가', '수익률', '메모', '등록일', '']
 
   // Sort entries by return % descending; entries with no price go to bottom
@@ -160,7 +163,25 @@ export default function DashboardClient({ entries, isAdmin }: DashboardClientPro
       </div>
 
       {/* Leaderboard */}
-      {!pricesLoading && ranked.length >= 1 && (
+      {initialLoading && entries.length >= 1 && (
+        <div className="flex gap-3 mb-6">
+          {Array.from({ length: Math.min(entries.length, 3) }).map((_, i) => (
+            <div
+              key={i}
+              className="flex-1 rounded-xl px-5 py-4 animate-pulse"
+              style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}
+            >
+              <div className="flex items-center justify-between mb-3">
+                <div className="h-4 w-8 rounded" style={{ background: 'var(--border)' }} />
+                <div className="h-4 w-14 rounded" style={{ background: 'var(--border)' }} />
+              </div>
+              <div className="h-4 w-24 rounded mb-1.5" style={{ background: 'var(--border)' }} />
+              <div className="h-3 w-32 rounded" style={{ background: 'var(--border)' }} />
+            </div>
+          ))}
+        </div>
+      )}
+      {!initialLoading && !pricesLoading && ranked.length >= 1 && (
         <div className="flex gap-3 mb-6">
           {ranked.slice(0, 3).map(({ entry, returnPct }, i) => {
             const medalStyle = [
@@ -228,7 +249,37 @@ export default function DashboardClient({ entries, isAdmin }: DashboardClientPro
               </tr>
             </thead>
             <tbody>
-              {sortedEntries.map((entry, i) => {
+              {initialLoading
+                ? entries.map((entry, i) => (
+                    <tr key={entry.id} style={i < entries.length - 1 ? { borderBottom: '1px solid var(--border)' } : undefined}>
+                      {/* 순위 */}
+                      <td className="px-4 py-3"><div className="animate-pulse h-4 w-4 rounded mx-auto" style={{ background: 'var(--border)' }} /></td>
+                      {/* 종목명 */}
+                      <td className="px-4 py-3 font-medium" style={{ color: 'var(--text-primary)' }}>{entry.company_name}</td>
+                      {/* 종목코드 */}
+                      <td className="px-4 py-3" style={{ color: 'var(--text-muted)' }}>{entry.ticker}</td>
+                      {/* 추천인 */}
+                      <td className="px-4 py-3" style={{ color: 'var(--text-muted)' }}>{entry.recommender ?? '—'}</td>
+                      {/* 매입단가 */}
+                      <td className="px-4 py-3 text-right tabular-nums" style={{ color: 'var(--text-primary)' }}>
+                        {isKoreanTicker(entry.ticker)
+                          ? Number(entry.purchase_price).toLocaleString('ko-KR')
+                          : `$${Number(entry.purchase_price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                      </td>
+                      {/* 현재가 skeleton */}
+                      <td className="px-4 py-3 text-right"><div className="animate-pulse h-4 w-16 rounded ml-auto" style={{ background: 'var(--border)' }} /></td>
+                      {/* 수익률 skeleton */}
+                      <td className="px-4 py-3 text-right"><div className="animate-pulse h-4 w-12 rounded ml-auto" style={{ background: 'var(--border)' }} /></td>
+                      {/* 메모 */}
+                      <td className="px-4 py-3 max-w-xs truncate" style={{ color: 'var(--text-muted)' }}>{entry.notes ?? '—'}</td>
+                      {/* 등록일 */}
+                      <td className="px-4 py-3 text-xs whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>
+                        {new Date(entry.created_at).toLocaleDateString('ko-KR')}
+                      </td>
+                      <td className="px-4 py-3" />
+                    </tr>
+                  ))
+                : sortedEntries.map((entry, i) => {
                 const price = prices[entry.ticker]
                 const returnPct =
                   price != null ? calculateReturnPct(entry.purchase_price, price) : null
