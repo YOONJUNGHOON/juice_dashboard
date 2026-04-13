@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
   const session = await getSession()
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { label, url } = await request.json()
+  const { label, memo, url } = await request.json()
 
   if (!label?.trim() || !url?.trim()) {
     return NextResponse.json({ error: '이름과 URL을 모두 입력해주세요' }, { status: 400 })
@@ -30,6 +30,7 @@ export async function POST(request: NextRequest) {
 
   const { error } = await supabase.from('ref_links').insert({
     label: label.trim(),
+    memo: memo?.trim() || null,
     url: url.trim(),
   })
 

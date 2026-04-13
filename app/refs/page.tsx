@@ -12,7 +12,7 @@ export default async function RefsPage() {
 
   const { data, error } = await supabase
     .from('ref_links')
-    .select('id, label, url')
+    .select('id, label, memo, url')
     .order('created_at', { ascending: true })
 
   // If table doesn't exist yet, show setup notice instead of crashing

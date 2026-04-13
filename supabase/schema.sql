@@ -59,6 +59,7 @@ CREATE TABLE IF NOT EXISTS uploads (
 CREATE TABLE IF NOT EXISTS ref_links (
   id         UUID        PRIMARY KEY DEFAULT uuid_generate_v4(),
   label      TEXT        NOT NULL,
+  memo       TEXT,
   url        TEXT        NOT NULL,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -75,6 +76,9 @@ INSERT INTO ref_links (label, url) VALUES
   ('이화투자분석회 보고서', 'https://ewhainvest.com/research'),
   ('BCMF 보고서',          'https://inhabluechip.com/BCMF-%EC%84%B8%EB%AF%B8%EB%82%98')
 ON CONFLICT DO NOTHING;
+
+-- Migration: add memo column if upgrading from earlier version
+ALTER TABLE ref_links ADD COLUMN IF NOT EXISTS memo TEXT;
 
 -- ------------------------------------------------------------
 -- Row Level Security

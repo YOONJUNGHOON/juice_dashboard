@@ -11,7 +11,7 @@ export async function PATCH(
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { id } = await params
-  const { label, url } = await request.json()
+  const { label, memo, url } = await request.json()
 
   if (!label?.trim() || !url?.trim()) {
     return NextResponse.json({ error: '이름과 URL을 모두 입력해주세요' }, { status: 400 })
@@ -19,7 +19,7 @@ export async function PATCH(
 
   const { error } = await supabase
     .from('ref_links')
-    .update({ label: label.trim(), url: url.trim() })
+    .update({ label: label.trim(), memo: memo?.trim() || null, url: url.trim() })
     .eq('id', id)
 
   if (error) return NextResponse.json({ error: 'Failed to update link' }, { status: 500 })
