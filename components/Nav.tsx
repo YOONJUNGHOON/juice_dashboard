@@ -10,6 +10,7 @@ interface NavProps {
 
 const NAV_LINKS = [
   { href: '/dashboard', label: '대시보드' },
+  { href: '/attendance', label: '발표 현황' },
   { href: '/archive', label: '아카이브' },
   { href: '/upload', label: '업로드' },
   { href: '/add-entry', label: '종목 추가' },

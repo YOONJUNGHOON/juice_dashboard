@@ -81,6 +81,22 @@ ON CONFLICT DO NOTHING;
 ALTER TABLE ref_links ADD COLUMN IF NOT EXISTS memo TEXT;
 
 -- ------------------------------------------------------------
+-- presentations
+-- Monthly presentation attendance per member.
+-- ------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS presentations (
+  id         UUID        PRIMARY KEY DEFAULT uuid_generate_v4(),
+  member_id  UUID        NOT NULL REFERENCES allowed_emails(id) ON DELETE CASCADE,
+  year       INTEGER     NOT NULL,
+  month      INTEGER     NOT NULL CHECK (month BETWEEN 1 AND 12),
+  presented  BOOLEAN     NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(member_id, year, month)
+);
+
+ALTER TABLE presentations ENABLE ROW LEVEL SECURITY;
+
+-- ------------------------------------------------------------
 -- Row Level Security
 -- All tables are locked down. Access only via service role key
 -- used in server-side API routes.
