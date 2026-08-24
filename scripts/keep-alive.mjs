@@ -46,7 +46,6 @@ if (missing.length > 0) {
   process.exit(1)
 }
 
-console.log(`url=${url.slice(0, 20)}... key length=${key.length}`)
 
 const source = process.env.KEEPALIVE_SOURCE ?? 'manual'
 const supabase = createClient(url, key, { auth: { persistSession: false } })
