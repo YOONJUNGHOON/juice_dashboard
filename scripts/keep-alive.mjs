@@ -33,10 +33,20 @@ loadEnvLocal()
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL
 const key = process.env.SUPABASE_SECRET_KEY
 
-if (!url || !key) {
-  console.error('Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SECRET_KEY')
+const missing = []
+if (!url) missing.push('NEXT_PUBLIC_SUPABASE_URL')
+if (!key) missing.push('SUPABASE_SECRET_KEY')
+
+if (missing.length > 0) {
+  // Names only — never log the values.
+  console.error(`Missing env var(s): ${missing.join(', ')}`)
+  console.error('In GitHub Actions these come from repository secrets')
+  console.error('(Settings > Secrets and variables > Actions > Repository secrets).')
+  console.error('Environment secrets and Dependabot secrets are NOT visible here.')
   process.exit(1)
 }
+
+console.log(`url=${url.slice(0, 20)}... key length=${key.length}`)
 
 const source = process.env.KEEPALIVE_SOURCE ?? 'manual'
 const supabase = createClient(url, key, { auth: { persistSession: false } })
