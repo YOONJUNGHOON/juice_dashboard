@@ -121,3 +121,20 @@ VALUES (
   TRUE
 )
 ON CONFLICT (email) DO NOTHING;
+
+-- ------------------------------------------------------------
+-- keepalive
+-- Single-row heartbeat table. A scheduled job writes to it so the
+-- free-tier Supabase project never hits 1 week of inactivity.
+-- See scripts/keep-alive.mjs and .github/workflows/supabase-keepalive.yml
+-- ------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS keepalive (
+  id        INTEGER     PRIMARY KEY DEFAULT 1,
+  pinged_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  source    TEXT,
+  CONSTRAINT keepalive_single_row CHECK (id = 1)
+);
+
+INSERT INTO keepalive (id) VALUES (1) ON CONFLICT (id) DO NOTHING;
+
+ALTER TABLE keepalive ENABLE ROW LEVEL SECURITY;
