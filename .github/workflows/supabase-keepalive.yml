@@ -31,9 +31,16 @@ jobs:
   # This re-enables it via the Actions API once the last commit is 45 days
   # old — no dummy commits, so the repo history stays clean.
   # Separate job to keep the actions:write permission off the ping job.
+  #
+  # continue-on-error: this job is best-effort insurance, while `ping` is the
+  # job that actually keeps the database awake. Without it a failure here
+  # turns the whole run red and hides whether the ping itself succeeded.
+  # It needs the repo's workflow permissions set to read/write — otherwise it
+  # is refused at "Set up job" and shows as a warning on an otherwise green run.
   keepalive:
     needs: ping
     runs-on: ubuntu-latest
+    continue-on-error: true
     permissions:
       actions: write
     steps:
