@@ -1,15 +1,24 @@
 name: Supabase keep-alive
 
 # Free-tier Supabase projects pause after 1 week of inactivity.
-# Runs Mon/Thu 03:00 UTC (12:00 KST) so the longest gap is 4 days.
+#
+# Runs daily at 03:00 UTC (12:00 KST). Daily rather than twice a week because
+# a single missed run has to stay survivable: on a Mon/Thu schedule one red
+# run already stretched the gap to a full 7 days, i.e. no margin at all. And a
+# run can go missing without failing — GitHub delays or drops scheduled
+# workflows under load. Daily leaves 6 days of slack, and the job is small
+# enough (one install, one request) that the extra runs cost nothing.
 on:
   schedule:
-    - cron: '0 3 * * 1,4'
+    - cron: '0 3 * * *'
   workflow_dispatch:
 
 jobs:
   ping:
     runs-on: ubuntu-latest
+    # The script caps each request itself; this is the backstop so a wedged
+    # runner cannot sit in the queue for the default six hours.
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v5
 
@@ -18,13 +27,22 @@ jobs:
           node-version: 22
 
       - name: Install Supabase client
-        run: npm install --no-save @supabase/supabase-js
+        # Install the range from package.json instead of floating to latest:
+        # a scheduled job should not pick up a new major on its own.
+        run: |
+          RANGE=$(node -p "require('./package.json').dependencies['@supabase/supabase-js']")
+          echo "Installing @supabase/supabase-js@$RANGE"
+          npm install --no-save --no-audit --no-fund "@supabase/supabase-js@$RANGE"
 
       - name: Ping database
         env:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
           KEEPALIVE_SOURCE: github-actions
+          # Retries are what keep a transient runner DNS/TCP blip from failing
+          # the run; a real outage still goes red after the third attempt.
+          KEEPALIVE_MAX_ATTEMPTS: '3'
+          KEEPALIVE_TIMEOUT_MS: '15000'
         run: node scripts/keep-alive.mjs
 
   # GitHub disables scheduled workflows after 60 days of repo inactivity.
@@ -37,8 +55,13 @@ jobs:
   # turns the whole run red and hides whether the ping itself succeeded.
   # It needs the repo's workflow permissions set to read/write — otherwise it
   # is refused at "Set up job" and shows as a warning on an otherwise green run.
+  #
+  # if: always() — this insurance is most needed exactly when the ping is
+  # failing, so a red ping must not skip it. The ping result stays visible
+  # because this is a separate, continue-on-error job.
   keepalive:
     needs: ping
+    if: always()
     runs-on: ubuntu-latest
     continue-on-error: true
     permissions:
